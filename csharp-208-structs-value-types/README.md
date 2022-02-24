@@ -1,4 +1,4 @@
-## 1. Structs
+# 1 Structs
 
 Structs are used in C# to resemble Value-Types. Their Use-Cases usually involve some Mathematical Context or some Performance-Optimization reasons.
 
@@ -72,11 +72,11 @@ unit = null; // ERROR: Can not assign `null`
 if(unit == null) // ERROR: Operator `==` can not be applied to `Unit` and `null`
 ```
 
-## 2. Value-Types
+# 2 Value-Types
 
 We have heard about Value-Types a few times now, but what does being a Value-Type Mean, really?
 
-### Call-by-value
+## 2.1 Call-by-value
 
 It means, that when invoking Methods, or assigning a value to a variable, the value gets copied.
 
@@ -138,7 +138,7 @@ Console.WriteLine(unit.name); // Vampire
 Console.WriteLine(unit2.name); // Zombie
 ```
 
-### Overview of Value-Types
+## 2.2 Overview of Value-Types
 
 Value-Types
 - Numeric Types `int`, `double`, `float`, ...
@@ -146,7 +146,7 @@ Value-Types
 - Enum Types e.g. `public Enum WeaponTypes { Gun, Bow }`
 - Structs e.g. `public struct Vector2 { public float x, y; }`
 
-### Value Types cannot be null
+## 2.3 Value Types cannot be null
 
 Again, we cannot assign null to Value-Types, and we cannot compare them to null:
 
@@ -155,7 +155,7 @@ int a = null; // Not possible
 bool b = null; // Nope
 ```
 
-### Nullable Value Types
+## 2.4 Nullable Value Types
 
 You can make value type fields or variables nullable, though, by using the `?` operator.
 
@@ -195,11 +195,11 @@ if(user.age.HasValue) {
 }
 ```
 
-## 3. Reference Types
+# 3 Reference Types
 
 On the opposite side of Value-Types, we have Reference Types. What's the difference?
 
-### Call-by-Reference
+## 3.1 Call-by-Reference
 
 Reference Types are passed as references rather than copies to variable assignments and as method arguments.\
 Which means, that a reference to the same Unit gets copied.\
@@ -303,7 +303,7 @@ Console.WriteLine(unit.name); | vampire -> Unit#1, unit -> Unit#2 | Unit#1{name:
 Console.WriteLine(vampire.name); | vampire -> Unit#1 | Unit#1{name: Zombie}
 
 
-### Overview of Reference-Types
+## 3.2 Overview of Reference-Types
 
 Value-Types
 - Basic Types `string`, `object`
@@ -311,7 +311,7 @@ Value-Types
 - Classes e.g. `public class House { public Color color; }`
 - Delegates e.g. `public delegate void HealthDelegate(int newHealth);`
 
-### Reference Types can be null
+## 3.3 Reference Types can be null
 
 Reference Types have the default value `null` and can have `null` assigned to them and can therefore also be compared to `null`:
 
@@ -320,7 +320,7 @@ string name = null;
 int[] numbers = null;
 ```
 
-## 4. Null
+# 4 Null
 
 `null` is a bit of a Curse in C# and other Languages that have Nullable Types: If you try accessing any value that is `null`, your program will Crash.
 
@@ -337,7 +337,7 @@ Console.WriteLine(unit.name.Length);
 
 Boom, Crash! `System.NullReferenceException` - why?
 
-### Checking for Null
+## 4.1 Checking for Null
 
 If you are not sure, whether a value is `null`, you should check for `null` first:
 
@@ -434,7 +434,7 @@ void UpdateHealthDisplay() {
 ```
 
 
-## 5. Structs vs. Classes
+# 5 Structs vs. Classes
 
 So, why do both exist? And which one should you use?
 
@@ -455,7 +455,7 @@ What does Microsoft have to say about this?
 <img width="521" alt="image" src="https://user-images.githubusercontent.com/7360266/139752194-f2280bc4-5c22-46b7-aa01-a3837981b4ee.png">
 
 
-## 6. Default Values
+# 6 Default Values
 
 If you use Types as Fields in Classes or Structs, then they have a default value, but what is this Default Value?
 
@@ -470,7 +470,7 @@ Enum | `0`
 Char | `\0`
 `structs` | A struct in which all fields and properties have default Values
 
-### The Default Keyword
+## 6.1 The Default Keyword
 
 You can use the `default` Keyword to get the default Value of any Type:
 

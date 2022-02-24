@@ -1,8 +1,6 @@
-# 003.6 Console Intermediate 2 - Generics
-
 Generic Classes and Methods allow us to create one Class or Method that can be used for different Types. Imagine, you had two Classes: `YuGiOhCardCollection` and `MagicCardCollection` which are very similar, but one works with `YuGiOhCards` and the other with `MagicCards`. You would end up with two identical classes, where only the CardType is replaced. In C#, you can instead define a Generic Class `CardCollection<TCardType>` and use it with different Card Types, like `CardCollection<YuGiOhCard>` and `CardCollection<MagicCard>` without rewriting the whole class again. We'll see, how that works exactly:
 
-## The Problem
+# 1 The Problem
 
 Often, we want to specialize classes for a certain Type.
 
@@ -53,7 +51,7 @@ And there's 200 different kinds of Monsters...
 
 ---
 
-## Using a Generic Class
+# 2 Using a Generic Class
 
 We can solve this problem using a Generic Class.\
 - You define a Generic class like this: `public class ClassName<GenericTypeName>`\
@@ -107,7 +105,7 @@ monsterTrap.TrappedObject = dragon;
 
 ---
 
-## Generic Type Constraints
+# 3 Generic Type Constraints
 
 Imagine the following classes:
 
@@ -250,7 +248,7 @@ public class Trap<TMonster> where TMonster : Monster {
 
 ---
 
-## Multiple Type Parameter
+# 4 Multiple Type Parameter
 
 
 Generic Classes can have Two Type Parameters, too.\
@@ -288,7 +286,7 @@ connection.To = slussen;
 
 ---
 
-## Parameter-less Constructor Type-Constraint:
+# 5 Parameter-less Constructor Type-Constraint:
 
 What you can not do, is this:
 
@@ -331,7 +329,7 @@ public Factory<T> : where T : new() {
 
 ---
 
-## Generic Methods
+# 6 Generic Methods
 
 Not only classes can be Generic, Methods can also be Generic:
 

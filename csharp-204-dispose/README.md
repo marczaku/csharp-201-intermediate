@@ -1,4 +1,4 @@
-# Dispose Pattern
+# 1 Dispose Pattern
 
 Of course there is! The Dispose Pattern helps out here. Whenever a class has Unmanaged Resources (any resource that won't automatically be cleaned up like File Handles, Network Sockets or also other Processes or so), it should implement `System.IDisposable`
 
@@ -42,7 +42,7 @@ newStreamWriter.Flush();
 
 This works! Nice! In other words: If we have classes which implement `System.IDisposable` we should not forget to call `Dispose()` when we're done using them. This will in the case of Streams also automatically Flush the Stream, by the way. But I think that it's quite easy to forget to call `Dispose()`, or?
 
-# Using using
+# 2 Using using
 
 The using Keyword actually handles Disposal of `IDisposable`-Classes for us! No extra code required. You assign the resource that you want to `use` within as a Function Argument and then use the File within the `{}`-Scope. When the Scope ends, `Dispose()` is called for you on the object:
 
@@ -106,7 +106,7 @@ for (int i = 0; i < 100; i++)
 }
 ```
 
-# What if your class uses an IDisposable Field?
+# 3 What if your class uses an IDisposable Field?
 
 Then your class should also implement `IDisposable` and make sure that all fields are disposed of when your class is disposed:
 
@@ -136,6 +136,6 @@ public class Logger : IDisposable
 }
 ```
 
-# Enumerator
+# 4 Enumerator
 
 Fun Fact: Most Enumerator Implementations implement `IDisposable`. Well, this wasn't that funny, was it? But this has reasons of some of them being reusable. And only if they've been disposed of in time, can they be reused for another method needing an Enumerator.

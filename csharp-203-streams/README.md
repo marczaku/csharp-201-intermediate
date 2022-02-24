@@ -1,4 +1,4 @@
-# Introduction
+# 1 Introduction
 Let's go back to streams for another second.
 
 ```cs
@@ -33,7 +33,7 @@ StreamReader streamReader = new StreamReader(gzipStream);
 
 This is pretty cool. It's a bit like connecting a bunch of Adapters in order to get exactly what you want.
 
-# Flush
+# 2 Flush
 
 Back to the original source code:
 
@@ -70,7 +70,7 @@ Good thing is that we can flush it manually, though:
 streamWriter.Flush();
 ```
 
-# Finalizing
+# 3 Finalizing
 
 Okay, that problem is solved. Let's try something else:
 

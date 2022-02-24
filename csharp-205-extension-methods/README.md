@@ -1,5 +1,3 @@
-# Extension Methods
-
 Imagine you were using this class from a Library:
 
 ```cs

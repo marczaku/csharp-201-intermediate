@@ -1,9 +1,8 @@
-
-# Attributes
+# 1 Attributes
 
 Attributes are kind of classes which are not intended to become part of your "real" code, but instead are used to decorate your code with hints and properties which you can then read using reflection. What? Let's have a look:
 
-# Required Properties
+# 2 Required Properties
 
 Scenario: The user wants to create a new Profile. He needs to provide some information. Some information are required, others are optional. Our code should make sure that all required information have been set.
 

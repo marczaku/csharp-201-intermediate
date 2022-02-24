@@ -1,8 +1,6 @@
-# 003.6 Console Intermediate 1 - Enums
-
 Enums are an Excellent Tool in C# to represent Collections of Identifiers in a Type-Safe manner. Think of different kind of Elements, or Chess Piece Types, or different Phases of a Card Game. We will take a look at the original problem, and how different approaches, that are possible without the use of Enums, are not satisfying enough.
 
-## 1. Using Multiple Bools to Represent Multiple Values
+# 1 Using Multiple Bools to Represent Multiple Values
 
 - Sometimes, we want to track a variable, that can have a fixed set of different values
 - **For example:** GameState, CharacterType, Element, AttackType, Difficulty, Rarity, …
@@ -27,7 +25,7 @@ choice.isPaper = true; // Error, it is supposed to only have one Value..
 
 Okay, this is annoying. What else can we do?
 
-## 2. Using an int to Represent Multiple Values
+# 2 Using an int to Represent Multiple Values
 
 - We could use a number to represent that value
 - One integer can store a lot of different values
@@ -74,7 +72,7 @@ ALSO: It is not safe: any programmer can assign any value:
 
 ---
 
-## 3. Using a string to Represent the Value Human-Readable
+# 3 Using a string to Represent the Value Human-Readable
 
 - We could use a string to represent that value
 - Easy to change, Readable
@@ -121,7 +119,7 @@ ALSO: The Performance of comparing strings is generally not so good.
 
 ---
 
-## 4. Using constant values as a Look-Up
+# 4 Using constant values as a Look-Up
 
 - How about pre-defining numbers?
 - We could have a class that contains static fields that we then use
@@ -185,7 +183,7 @@ ALSO: I can by mistake assign numbers that are not meant to be assigned here:
 
 ---
 
-## 5. Using Enums
+# 5 Using Enums
 
 ```cs
 public enum Sign {
@@ -231,7 +229,7 @@ playerChoice = ChessPiece.Rook; // ERROR: Cannot cast `ChessPiece` to `Sign`
 
 ---
 
-## 6. Casting
+# 6 Casting
 You can explicitly cast enum values from numbers:
 
 ```cs
