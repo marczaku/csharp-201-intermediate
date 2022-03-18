@@ -22,8 +22,6 @@ There is no red line through these topics, rather various topics worth mentionin
 
 ## 205 [Extension Methods](./csharp-205-extension-methods/)
 - [ ] `this ParamType paramName`
-- [ ] Unmanaged Resources
-- [ ] `using`
 
 ## 206 [Reflection](./csharp-206-reflection/)
 - [ ] Type Introspection
@@ -38,7 +36,7 @@ There is no red line through these topics, rather various topics worth mentionin
 - [ ] `[Attribute]`
 - [ ] `[Attribute(With, Arguments)]`
 
-## 208 [Structs & Value Types](./csharp-207-attributes/)
+## 208 [Structs & Value Types](./csharp-208-structs-value-types/)
 - [ ] `struct`
 - [ ] Call-By-Value
 - [ ] Value Types
@@ -65,17 +63,18 @@ There is no red line through these topics, rather various topics worth mentionin
 
 ## 211 [Exceptions & Debugging](./csharp-210-exceptions-debugging/)
 - [ ] `System.Exception`
+- [ ] `throw`
 - [ ] `try`...`catch`
 - [ ] `try`...`catch`...`finally`
 - [ ] `using`
 
 ## 212 [Delegates & Lambdas](./csharp-211-delegates-lambda/)
 - [ ] `delegate`
+- [ ] `event`
 - [ ] `System.Action`
 - [ ] `System.Func`
 - [ ] Lambda Function
 - [ ] Catching Variables
-- [ ] `event`
 
 ## 213 [Common Interfaces](./csharp-212-common-interfaces/)
 - [ ] `IComparable`

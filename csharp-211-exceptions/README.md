@@ -197,8 +197,8 @@ But the Program will still crash.
 ```cs
 try{
   // do something
-} catch (Exception e){
-  
+} catch (Exception e) {
+  // log error / try handling / rethrow
 } finally {
   // clean up
 }
@@ -214,3 +214,50 @@ public class PlayerDisconnectedException : Exception {
   public PlayerDisconnectedException(string message, Exception inner) : base(message, inner){}
 }
 ```
+
+In order for your program to have clear instructions, you need to define your own Exception-Types.
+
+This allows callers - including yourself:
+- to catch specific types of exceptions
+- to track the source and solution to errors
+
+## 5.1 Parameters
+
+Here, the Exception always requires the thrower to specify, what the idea of the missing balance values is:
+
+```cs
+	public class MissingBalanceValuesException : Exception {
+
+		static string GetExceptionString(string id) {
+			return "Can not find Balance Values with id: " + id;
+		}
+
+		static string GetExceptionStringWithMessage(TemplateId templateId, string message) {
+			return GetExceptionString(templateId) + " Additional Info: " + message;
+		}
+
+		public MissingBalanceValuesException(TemplateId templateId) : base(GetExceptionString(templateId)) { }
+
+		public MissingBalanceValuesException(TemplateId templateId, string message) : base(GetExceptionStringWithMessage(templateId, message)) { }
+
+		public MissingBalanceValuesException(TemplateId templateId, string message, Exception innerException) : base(GetExceptionStringWithMessage(templateId, message), innerException) { }
+	}
+```
+
+## 5.2 Hints
+
+It can be extremely useful to your users to provide some help with common sources of an error and possible solutions:
+
+```cs
+		static string GetExceptionString(string id) {
+			return "Can not find Balance Values with id: " + id + ". Hint: Have you manually synced the Bundles? Fix: Enable Auto-Sync in Settings.;
+		}
+```
+
+## 5.3 Leaking Information
+
+But careful! Your application should not leak sensible information through exceptions! That's actually the reason, why .NET's standard Exceptions barely provide any information, e.g.
+- the IndexOutRangeException mentions neither the index nor the size of the Array.
+- the NullReferenceException does not mention the name of the variable that's null
+
+Else, attackers could try to provoke Exceptions and thereby gain knowledge about your code and data and use that discover vulnerabilities and angles of attack. Even from remote!

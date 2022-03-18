@@ -2,6 +2,8 @@
 
 Structs are used in C# to resemble Value-Types. Their Use-Cases usually involve some Mathematical Context or some Performance-Optimization reasons.
 
+## 1.1 Like Classes
+
 Structs are similar to classes:
 
 ```cs
@@ -10,15 +12,16 @@ public struct Unit {
   private int maxHealth;
   public int Health {get; set;}
   
-  
   public void SetMaxHealth(int value) {
     this.maxHealth = value;
   }
 }
 ```
 
-They cannot inherit from other classes, but they can implement Interfaces.
-- (Detail: It is often not recommended, as casting structs to interfaces leads to boxing.)
+Only difference here: `struct` Keyword instead of `class`
+
+## 1.2 They can implement Interfaces
+
 ```cs
 public interface IUnit {
   public int Health {get;}
@@ -28,9 +31,14 @@ public struct Unit : IUnit {
 }
 ```
 
+They cannot inherit from other classes, but they can implement Interfaces.
+- (Detail: It is often not recommended, as casting structs to interfaces leads to boxing.)
+
+## 1.3 Constructor Limitations
+
 They have limitations on their Constructors:
 
-- You can not define a parameterless constructor.
+- You can not define a parameter-less constructor.
 - Your constructors must assign a value to all Fields and Auto-Properties.
 
 ```cs
@@ -46,7 +54,9 @@ public struct Unit {
   }
 ```
 
-Struct Variables and Fields can never be Null!
+## 1.4 Not nullable
+
+Variables and Fields of Struct-Types can never be Null!
 
 ```cs
 public struct Unit {
@@ -59,7 +69,6 @@ public class Game {
   public Game() {
     // This will not throw a NullReferenceException:
     unit.name = "Hey!";
-    unit = null;
   }
 }
 ```
@@ -81,62 +90,212 @@ We have heard about Value-Types a few times now, but what does being a Value-Typ
 It means, that when invoking Methods, or assigning a value to a variable, the value gets copied.
 
 ```cs
-public struct unit {
-  public string name;
+public struct Unit {
+  public int age;
+  public int size;
 }
 ```
 
 ```cs
-
-void Main() {
-  Unit vampire = new Unit();
-  vampire.name = "Vampire";
-  
-  // When passing the unit as a method argument, a copy of the unit is created
-  // And assigned to the method parameter
-  ChangeUnitName(vampire);
-  Console.WriteLine(vampire.name); // OUTPUT: Vampire
-}
-
-void ChangeUnitName(Unit unit) {
-  Console.WriteLine(unit.name); // OUTPUT: Vampire
-  unit.name = "Zombie";
-  Console.WriteLine(unit.name); // OUTPUT: Zombie
+static void Main() {
+  Unit adult = new Unit();
+  unit.age = 15;
+  ChangeUnitAge(adult);
+  Console.WriteLine(adult.age); // OUTPUT: 15
 }
 ```
 
-Output:
-```
-Vampire
-Zombie
-Vampire
+```cs
+void ChangeUnitAge(Unit unit) {
+  Console.WriteLine(unit.age); // OUTPUT: 15
+  unit.age = 2;
+  Console.WriteLine(unit.age); // OUTPUT: 2
+}
 ```
 
-Here, the following happens:
+---
 
-Code-Line Executed | Variables
------------------- | -------------
-Unit vampire = new Unit(); | vampire:Unit{name:null}
-vampire.name = "Vampire"; | vampire:Unit{name:Vampire}
-ChangeUnitName(vampire); | vampire:Unit{name:Vampire}, unit:Unit{name:Vampire}
-Console.WriteLine(unit.name); | vampire:Unit{name:Vampire}, unit:Unit{name:Vampire}
-unit.name = "Zombie"; | vampire:Unit{name:Vampire}, unit:Unit{name:Zombie}
-Console.WriteLine(unit.name); | vampire:Unit{name:Vampire}, unit:Unit{name:Zombie}
-{{ChangeUnitName end}} | vampire:Unit{name:Vampire}
-Console.WriteLine(vampire.name); | vampire:Unit{name:Vampire}
+What happens internally?
+
+```cs
+static void Main() {
+```
+
+First, enough Memory for the `Main`-Method is reserved. The `Main` Method has no parameters, but one local variable of Type `Unit`. The `Unit` has two field of type `int`.
+
+On 64-bit Systems,
+- `int` refers to `Int32` and is 4 bytes in size.
+
+Therefore, `Unit` is 8 bytes in size and this is the Memory Layout:
+
+|Method|Memory|Data|
+|------|------|----|
+| Main | 00 00 00 00 00 00 00 00 | adult(age:0,size:0)|
+
+---
+
+```cs
+Unit adult = new Unit();
+```
+
+This doesn't really so anything in this case.
+
+|Method|Memory|Data|
+|------|------|----|
+| Main | 00 00 00 00 00 00 00 00 | adult(age:0,size:0)|
+
+---
+
+```cs
+unit.age = 15;
+```
+
+Here, `15` is assigned to the first Field of `unit`. All 8 bytes of the `Main`-Method belong to the `unit`, but the first four of those belong to the `unit`'s `age`, the other four to `unit`'s `size`:
+
+|Method|Memory|Data|
+|------|------|----|
+| Main | 00 00 00 0F 00 00 00 00 | adult(age:15,size:0)|
+
+(F is 15 in Hexadecimal)
+
+---
+
+```cs
+ChangeUnitAge(adult);
+
+void ChangeUnitAge(Unit unit) {
+```
+
+Now, when we call `ChangeUnitAge`, something interesting happens:
+- Enough Memory for the new Method is allocated on the Stack.
+- `adult` gets copied to `unit`
+
+`ChangeUnitAge` only requires enough Memory for the `unit` Parameter:
+
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 0F 00 00 00 00 | adult(age:15,size:0)|
+| ChangeUnitAge | 00 00 00 00 00 00 00 00 | unit(age:0,size:0)|
+
+And `unit` consist of all 8 bytes of `Main`, so they are all copied to `ChangeUnitAge`:
+
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 0F 00 00 00 00 | adult(age:15,size:0)|
+| ChangeUnitAge | 00 00 00 0F 00 00 00 00 | unit(age:15,size:0)|
+
+---
+
+```cs
+Console.WriteLine(unit.age); // OUTPUT: 15
+```
+
+Now, when we want to print `unit`'s age, we receive the number of the first four bytes, which is `15`.
+
+---
+
+```cs
+unit.age = 2;
+```
+
+Now, we assign 2 to `unit`'s `age`. Do you see how `adult` was not affected by this?
+
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 0F 00 00 00 00 | adult(age:15,size:0)|
+| ChangeUnitAge | 00 00 00 02 00 00 00 00 | unit(age:2,size:0)|
+
+---
+
+```cs
+Console.WriteLine(unit.age); // OUTPUT: 2
+```
+
+This line will not print Unit's updated `age` of `2`.
+
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 0F 00 00 00 00 | adult(age:15,size:0)|
+| ChangeUnitAge | 00 00 00 02 00 00 00 00 | unit(age:2,size:0)|
+
+---
+
+```cs
+}
+```
+
+Now, something interesting happen again: The Method `ChangeUnitAge` ends, which leads to all of it Memory being popped off the Stack:
+
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 0F 00 00 00 00 | adult(age:15,size:0)|
+
+There is no more information about any `unit` with an `age` of `2` in the Memory now. That was all local information.
+
+---
+
+```cs
+Console.WriteLine(adult.age); // OUTPUT: 15
+```
+
+Time for the last line of code. Here, `adult`'s `age` is printed. Which is still unchanged and `15`.
+
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 0F 00 00 00 00 | adult(age:15,size:0)|
+
+
 
 The same goes for variables:
 
 ```cs
 Unit unit = new Unit();
-unit.name = "Vampire";
-Console.WriteLine(unit.name); // Vampire
+unit.age = 15;
+Console.WriteLine(unit.age); // 15
 Unit unit2 = unit;
-Console.WriteLine(unit2.name); // Vampire
-unit2.name = "Zombie";
-Console.WriteLine(unit.name); // Vampire
-Console.WriteLine(unit2.name); // Zombie
+Console.WriteLine(unit2.age); // 15
+unit2.age = 2;
+Console.WriteLine(unit.name); // 15
+Console.WriteLine(unit2.name); // 2
 ```
+
+Here, `Main` needs enough space for 2 `Unit`'s:
+
+|Method|Memory|Data|
+|------|------|----|
+| Main | 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | unit(age:0,size:0),unit2(age:0,size:0)|
+
+---
+
+```cs
+unit.age = 15;
+```
+
+|Method|Memory|Data|
+|------|------|----|
+| Main | 00 00 00 0F 00 00 00 00 00 00 00 00 00 00 00 00 | unit(age:15,size:0),unit2(age:0,size:0)|
+
+---
+
+```cs
+Unit unit2 = unit;
+```
+
+|Method|Memory|Data|
+|------|------|----|
+| Main | 00 00 00 0F 00 00 00 00 00 00 00 0F 00 00 00 00 | unit(age:15,size:0),unit2(age:15,size:0)|
+
+---
+
+```cs
+unit2.age = 2;
+```
+
+|Method|Memory|Data|
+|------|------|----|
+| Main | 00 00 00 0F 00 00 00 00 00 00 00 02 00 00 00 00 | unit(age:15,size:0),unit2(age:2,size:0)|
+
+
 
 ## 2.2 Overview of Value-Types
 
@@ -148,16 +307,14 @@ Value-Types
 
 ## 2.3 Value Types cannot be null
 
-Again, we cannot assign null to Value-Types, and we cannot compare them to null:
+Again, we cannot assign `null` to Value-Types, and we cannot compare them to `null`:
 
 ```cs
 int a = null; // Not possible
-bool b = null; // Nope
+if(a == null){} // Nope
 ```
 
 ## 2.4 Nullable Value Types
-
-You can make value type fields or variables nullable, though, by using the `?` operator.
 
 ```cs
 public class User {
@@ -165,10 +322,10 @@ public class User {
 }
 ```
 
-In this example, we assign `null` to the age field, if the user decides, not to give his age.\
-This is a more elegant solution, than just assigning `0` or `-1` to his age:
+You can make value type fields or variables nullable, though, by using the `?` operator.
 
-```
+
+```cs
 User user = new User();
 Console.WriteLine("Do you want to name your age?");
 if(Console.ReadLine() == "y") {
@@ -179,13 +336,16 @@ if(Console.ReadLine() == "y") {
 }
 ```
 
-Now, if you want to get the actual value of the field, you need to make sure, that it is not null and then cast it:
+In this example, we assign `null` to the age field, if the user decides, not to give his age.\
+This is a more elegant solution, than just assigning `0` or `-1` to his age:
 
 ```cs
 if(user.age != null) {
   Console.WriteLine("Next year, you will be " + (((int)user.age)+1) + " years old.");
 }
 ```
+
+Now, if you want to get the actual value of the field, you need to make sure, that it is not null and then cast it:
 
 Since this is ugly, C# has a more pretty solution again:
 
@@ -207,101 +367,372 @@ The best way of demonstrating this, is by demonstrating the same code as before.
 With only one change: The `Unit` this time is a `class` instead of a `struct`:
 
 ```cs
-public class unit {
-  public string name;
+public class Unit {
+  public int age;
+  public int size;
 }
+```
+
+### 3.1.1 Sample 1: Copy Reference into Method
+
+```cs
+Unit vampire = new Unit();
+vampire.age = 15;
+ChangeUnitAge(vampire);
+Console.WriteLine(vampire.age); // OUTPUT: 2
 ```
 
 ```cs
-
-void Main() {
-  Unit vampire = new Unit();
-  vampire.name = "Vampire";
-  
-  // When passing the unit as a method argument, the unit is passed a reference.
-  // Therefore, changes to the unit within that method, will also affect the unit
-  // Here, outside the method:
-  ChangeUnitName(vampire);
-  Console.WriteLine(vampire.name); // OUTPUT: Zombie
-}
-
-void ChangeUnitName(Unit unit) {
-  Console.WriteLine(unit.name); // OUTPUT: Vampire
-  unit.name = "Zombie";
-  Console.WriteLine(unit.name); // OUTPUT: Zombie
+void ChangeUnitAge(Unit unit) {
+  Console.WriteLine(unit.age); // OUTPUT: 15
+  unit.age = 2;
+  Console.WriteLine(unit.age); // OUTPUT: 2
 }
 ```
 
-Output:
-```
-Vampire
-Zombie
-Zombie
+What happens internally?
+
+```cs
+static void Main() {
 ```
 
-The same goes for variables:
+First, enough Memory for the `Main`-Method is reserved. The `Main` Method has no parameters, but one local variable of Type `Unit`. The `Unit` has two field of type `int`. But locally, only the address of the Reference-Type is stored. And it is `0` per default.
+
+On 32-bit Systems,
+- `int` refers to `Int32` and is 4 bytes in size.
+- `class` references are stored as `IntPtr` and also 4 bytes in size.
+
+Therefore, `Unit` is 4 bytes in size:
+
+|Method|Memory|Data|
+|------|------|----|
+| Main | 00 00 00 00 | vampire(0x00`null`)|
+
+---
+
+```cs
+Unit vampire = new Unit();
+```
+Now, a new `Unit` is created on the HEAP and its address is stored in `vampire`:
+
+HEAP:
+|Address|Memory|Data|
+|------|------|----|
+| 0x01 | 00 00 00 00 00 00 00 00 | Unit(age:0,size:0)|
+
+STACK:
+|Method|Memory|Data|
+|------|------|----|
+| Main | 00 00 00 01 | vampire(0x01)|
+
+---
+
+```cs
+vampire.age = 15;
+```
+
+We look up the `Unit` at its address (0x01) and then change the `age` there to `15`:
+
+HEAP:
+|Address|Memory|Data|
+|------|------|----|
+| 0x01 | 00 00 00 0F 00 00 00 00 | Unit(age:15,size:0)|
+
+STACK:
+|Method|Memory|Data|
+|------|------|----|
+| Main | 00 00 00 01 | vampire(0x01)|
+
+You can see, that on the stack, nothing has changed.
+
+---
+
+```cs
+ChangeUnitAge(vampire);
+
+void ChangeUnitAge(Unit unit) {
+```
+
+Now, when we call `ChangeUnitAge`, again a new Method Scope is pushed on the stack:
+- Enough Memory for the new Method is allocated on the Stack.
+- `vampire`, which is only a Pointer to the actual `Unit`, gets copied to `unit`
+
+`ChangeUnitAge` only requires enough Memory for the `unit` Parameter:
+
+HEAP:
+|Address|Memory|Data|
+|------|------|----|
+| 0x01 | 00 00 00 0F 00 00 00 00 | Unit(age:15,size:0)|
+
+STACK:
+|Method|Memory|Data|
+|------|------|----|
+| Main | 00 00 00 01 | vampire(0x01)|
+| ChangeUnitAge | 00 00 00 00 | unit(0x00`null`)|
+
+And `unit` consist of all 4 bytes of the address, so they are all copied to `ChangeUnitAge`:
+
+HEAP:
+|Address|Memory|Data|
+|------|------|----|
+| 0x01 | 00 00 00 0F 00 00 00 00 | Unit(age:15,size:0)|
+
+STACK:
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 01 | vampire(0x01)|
+| ChangeUnitAge | 00 00 00 01 | unit(0x01)|
+
+---
+
+```cs
+Console.WriteLine(unit.age); // OUTPUT: 15
+```
+
+Now, when we want to print `unit`'s age, we receive the number of the first four bytes at address `0x01`, which is `15`:
+
+HEAP:
+|Address|Memory|Data|
+|------|------|----|
+| 0x01 | 00 00 00 0F 00 00 00 00 | Unit(age:15,size:0)|
+
+STACK:
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 01 | vampire(0x01)|
+| ChangeUnitAge | 00 00 00 01 | unit(0x01)|
+
+- `unit` contains the address `0x01`
+- `age` is 
+  - the first field of the class `Unit`
+  - of type `Int32` and therefore 4 bytes in size
+- therefore, the four bytes at address `0x01` are read and passed into `Console.WriteLine`
+
+---
+
+```cs
+  unit.age = 2;
+```
+
+The same as described above applies when assigning the value `2` to `unit`'s age:
+- The value at address `0x01` is changed to two.
+
+HEAP:
+|Address|Memory|Data|
+|------|------|----|
+| 0x01 | 00 00 00 02 00 00 00 00 | Unit(age:2,size:0)|
+
+STACK:
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 01 | vampire(0x01)|
+| ChangeUnitAge | 00 00 00 01 | unit(0x01)|
+
+---
+
+```cs
+Console.WriteLine(unit.age); // OUTPUT: 2
+```
+
+You know what's happening here already:
+
+HEAP:
+|Address|Memory|Data|
+|------|------|----|
+| 0x01 | 00 00 00 02 00 00 00 00 | Unit(age:2,size:0)|
+
+STACK:
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 01 | vampire(0x01)|
+| ChangeUnitAge | 00 00 00 01 | unit(0x01)|
+
+---
+
+```cs
+}
+```
+
+The method ends and the Method Scope is popped off the stack:
+
+HEAP:
+|Address|Memory|Data|
+|------|------|----|
+| 0x01 | 00 00 00 02 00 00 00 00 | Unit(age:2,size:0)|
+
+STACK:
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 01 | vampire(0x01)|
+
+---
+
+```cs
+Console.WriteLine(vampire.age); // OUTPUT: 2
+```
+
+And this is the big difference to value types now:
+- The change that was applied to `unit`
+- Also has an effect on `vampire`
+- Because both reference the same object instance
+- at the same address `0x01`
+
+HEAP:
+|Address|Memory|Data|
+|------|------|----|
+| 0x01 | 00 00 00 02 00 00 00 00 | Unit(age:2,size:0)|
+
+STACK:
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 01 | vampire(0x01)|
+
+
+---
+
+### 3.1.2 Sample 2: Copy Reference to Local Variable
 
 ```cs
 Unit unit = new Unit();
-unit.name = "Vampire";
-Console.WriteLine(unit.name); // Vampire
+unit.age = 15;
+Console.WriteLine(unit.age); // OUTPUT: 15
 Unit unit2 = unit;
-Console.WriteLine(unit2.name); // Vampire
-unit2.name = "Zombie";
-Console.WriteLine(unit.name); // Zombie
-Console.WriteLine(unit2.name); // Zombie
+Console.WriteLine(unit2.age); // OUTPUT: 15
+unit2.age = 2;
+Console.WriteLine(unit.age); // // OUTPUT: 2
+Console.WriteLine(unit2.age); // // OUTPUT: 2
 ```
 
-However, the reference still gets copied. But instead of the whole Unit being copied / cloned, only a reference to the Unit is copied.\
-We can break it, by assigning a reference to a new Unit to the parameter:
+This is the final Memory State:
+
+HEAP:
+|Address|Memory|Data|
+|------|------|----|
+| 0x01 | 00 00 00 02 00 00 00 00 | Unit(age:2,size:0)|
+
+STACK:
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 01 00 00 00 01 | unit(0x01),unit2(0x01)|
+
+The address still gets copied. But instead of the whole Unit being copied / cloned, it is only the reference to the Unit.
+
+### 3.1.3 Sample 3: Creating new Object Instances
+
+We can break the link by creating a `new Unit()` and assigning that address to the variable:
 
 ```cs
+Unit vampire = new Unit();
+vampire.age = 15;
+ChangeUnitName(vampire);
+Console.WriteLine(vampire.age); // OUTPUT: 2
+```
 
-void Main() {
-  Unit vampire = new Unit();
-  vampire.name = "Vampire";
-  
-  // When passing the unit as a method argument, the unit is passed a reference.
-  // Therefore, changes to the unit within that method, will also affect the unit
-  // Here, outside the method:
-  ChangeUnitName(vampire);
-  Console.WriteLine(vampire.name); // OUTPUT: Zombie
-}
-
+```cs
 void ChangeUnitName(Unit unit) {
-  Console.WriteLine(unit.name); // OUTPUT: Vampire
-  unit.name = "Zombie";
-  Console.WriteLine(unit.name); // OUTPUT: Zombie
-  unit = new Unit();
-  unit.name = "Skeleton";
-  Console.WriteLine(unit.name); // OUTPUT: Skeleton
+  Console.WriteLine(unit.age); // OUTPUT: 15
+  unit.age = 2;
+  Console.WriteLine(unit.age); // OUTPUT: 2
+  unit = new Unit(); // !!!
+  unit.age = 7; // !!!
+  Console.WriteLine(unit.age); // OUTPUT: 7
 }
 ```
 
-Output:
+---
+
+The first interesting change here:
+
+```cs
+  unit = new Unit(); // !!!
 ```
-Vampire
-Zombie
-Skeleton
-Zombie
+
+HEAP:
+|Address|Memory|Data|
+|------|------|----|
+| 0x01 | 00 00 00 02 00 00 00 00 | Unit(age:2,size:0)|
+| 0x09 | 00 00 00 00 00 00 00 00 | Unit(age:0,size:0)|
+
+STACK:
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 01 | vampire(0x01)|
+| ChangeUnitAge | 00 00 00 01 | unit(0x09)|
+
+A new `Unit` instance is created on the HEAP. Since the previous one requires 8 bytes in size, we can assume that the new one will be allocated at least 8 bytes further away (reality is more complex, unfortunately). So, here, we get the address of the new `Unit` returned: `0x09` and assign that to the local `unit` variable.
+
+---
+
+```cs
+  unit.age = 7; // !!!
 ```
 
-Another way of presenting what's happening in the program:
+Here, `7` gets assigned to the `age` of the `Unit` at the address that is stored in the `unit` variable (`0x09`):
 
-Code-Line Executed | Variables | Objects in Memory
------------------- | --------- | --------------------
-Unit vampire = new Unit(); | vampire -> Unit#1 | Unit#1{name: null}
-vampire.name = "Vampire"; | vampire -> Unit#1 | Unit#1{name: Vampire}
-ChangeUnitName(vampire); | vampire -> Unit#1, unit -> Unit#1 | Unit#1{name: Vampire}
-Console.WriteLine(unit.name); | vampire -> Unit#1, unit -> Unit#1 | Unit#1{name: Vampire}
-unit.name = "Zombie"; | vampire -> Unit#1, unit -> Unit#1 | Unit#1{name: Zombie}
-Console.WriteLine(unit.name); | vampire -> Unit#1, unit -> Unit#1 | Unit#1{name: Zombie}
-unit = new Unit(); | vampire -> Unit#1, unit -> Unit#2 | Unit#1{name: Zombie}, Unit#2{name: null}
-unit.name = "Skeleton"; | vampire -> Unit#1, unit -> Unit#2 | Unit#1{name: Zombie}, Unit#2{name: Skeleton}
-Console.WriteLine(unit.name); | vampire -> Unit#1, unit -> Unit#2 | Unit#1{name: Zombie}, Unit#2{name: Skeleton}
-{{ChangeUnitName end}} | vampire -> Unit#1 | Unit#1{name: Zombie}
-Console.WriteLine(vampire.name); | vampire -> Unit#1 | Unit#1{name: Zombie}
+HEAP:
+|Address|Memory|Data|
+|------|------|----|
+| 0x01 | 00 00 00 02 00 00 00 00 | Unit(age:2,size:0)|
+| 0x09 | 00 00 00 07 00 00 00 00 | Unit(age:7,size:0)|
 
+STACK:
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 01 | vampire(0x01)|
+| ChangeUnitAge | 00 00 00 01 | unit(0x09)|
+
+---
+
+```cs
+  Console.WriteLine(unit.age); // OUTPUT: 7
+```
+
+This prints the `age` of the `Unit` stored at address `0x09`, because that's the value stored in the `unit` variable:
+
+HEAP:
+|Address|Memory|Data|
+|------|------|----|
+| 0x01 | 00 00 00 02 00 00 00 00 | Unit(age:2,size:0)|
+| 0x09 | 00 00 00 07 00 00 00 00 | Unit(age:7,size:0)|
+
+STACK:
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 01 | vampire(0x01)|
+| ChangeUnitAge | 00 00 00 01 | unit(0x09)|
+
+---
+
+```cs
+}
+```
+
+You know, what happens when the Method ends? The Method Memory gets popped from the Stack:
+
+HEAP:
+|Address|Memory|Data|
+|------|------|----|
+| 0x01 | 00 00 00 02 00 00 00 00 | Unit(age:2,size:0)|
+| 0x09 | 00 00 00 07 00 00 00 00 | Unit(age:7,size:0)|
+
+STACK:
+|Method|Memory|Data|
+|:------:|------|----|
+| Main | 00 00 00 01 | vampire(0x01)|
+
+Now, this is an interesting state, because nobody has the address `0x09` anymore. Which means, that this `Unit` can never be referenced again (we can not "make up" addresses, like in C++).
+
+The Garbage Collector will notice this the next time it gets active and then `~Finalize()` the `Unit` and make the Memory on th Heap available for other objects again,
+
+---
+
+```cs
+Console.WriteLine(vampire.age); // OUTPUT: 2
+```
+
+For the sake of completeness, let's look at this line as well, but it should be any big surprise :)
+
+---
 
 ## 3.2 Overview of Reference-Types
 
@@ -439,16 +870,16 @@ void UpdateHealthDisplay() {
 So, why do both exist? And which one should you use?
 
 - Structs have much better Performance.
-  - This has to do with that Classes are stored on the Heap, which is dynamic object memory
+  - This has to do with Classes bing stored on the Heap, which is dynamic object memory
   - Data stored on the Heap is usually slower in access
   - And generates Garbage, which needs to be cleaned up by the Garbage Collector
 - Structs cause an Overhead when being Copied, though
-  - Which is only relevant for large structs ( > 16 bytes, which is 4 floats) 
+  - Which is only relevant for large `structs` ( > 16 bytes, which is e.g. 4 `floats`) 
 - Structs are exceptionally strong in combination with Arrays
-  - The Array is a reference type, but an Array of structs is all stored in one Place
+  - The Array is a reference type, but an Array of `structs` is all stored in one Place
   - While an Array of classes has References to many different Objects all stored somewhere on the Heap
-- Structs can never be null
-  - No NullReferenceExceptions, yay!
+- Structs can never be `null`
+  - No `NullReferenceException`, yay!
 
 What does Microsoft have to say about this?
 
