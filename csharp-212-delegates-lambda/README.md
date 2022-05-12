@@ -390,7 +390,7 @@ public Func<int> HealthChanged;
 
 HealthChanged += UpdateUI;
 
-void UpdateUI(int newHealth) => healthLabel.text = newHealth;
+int GetHealth() => return FindObjectOfType<Player>().health;
 ```
 
 ### 3.2 One Parameter
